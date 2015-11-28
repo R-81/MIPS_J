@@ -51,6 +51,12 @@ public class R extends DM{
 		else if(instruction==86){
 			returnNumber = sltu(parameter1,parameter2,parameter3);
 		}
+		else if(instruction==119){
+			returnNumber = sleu(parameter1,parameter2,parameter3);
+		}
+		else if(instruction==120){
+			returnNumber = sle(parameter1,parameter2,parameter3);
+		}
 		else{
 			returnNumber = 1;
 		}
@@ -64,7 +70,10 @@ public class R extends DM{
 		if(parameter2>31){
 			parameter2 -= 32;
 		}
-		if(instruction==69){
+		if(instruction==68){
+			returnNumber = mfc0(parameter1,parameter2);
+		}
+		else if(instruction==69){
 			returnNumber = mtc0(parameter1,parameter2);
 		}
 		else if(instruction==70){
@@ -89,12 +98,24 @@ public class R extends DM{
 		if(parameter1>31){
 			parameter1 -= 32;
 		}
+		if(instruction==64){
+			returnNumber = mfhi(parameter1);
+		}
+		else if(instruction==65){
+			returnNumber = mflo(parameter1);
+		}
+		else if(instruction==66){
+			returnNumber = mthi(parameter1);
+		}
+		else if(instruction==67){
+			returnNumber = mtlo(parameter1);
+		}
 		else{
 			returnNumber = 1;
 		}
 		return returnNumber;
 	}
-	private static int add(int parameter1,int parameter2,int parameter3,int tempNumber){
+	protected static int add(int parameter1,int parameter2,int parameter3,int tempNumber){
 		int temp30 = 0;
 		int calculatorNumber = 0;
 		for(int i=0;i<MaxBit;i++){
@@ -133,7 +154,7 @@ public class R extends DM{
 		}
 		return 0;
 	}
-	private static int addu(int parameter1,int parameter2,int parameter3,int tempNumber){ 
+	protected static int addu(int parameter1,int parameter2,int parameter3,int tempNumber){ 
 		int calculatorNumber = 0;
 		for(int i=0;i<MaxBit;i++){
 			calculatorNumber=0;
@@ -165,7 +186,7 @@ public class R extends DM{
 		}
 		return 0;
 	}
-	private static int sub(int parameter1,int parameter2,int parameter3){
+	protected static int sub(int parameter1,int parameter2,int parameter3){
 		if(register[parameter2][31]==0){
 			for(int i=0;i<32;i++){
 				register[36][i]=register[parameter2][i];
@@ -203,7 +224,7 @@ public class R extends DM{
 		}
 		return 0;
 	}
-	private static int subu(int parameter1,int parameter2,int parameter3){
+	protected static int subu(int parameter1,int parameter2,int parameter3){
 		if(register[parameter2][31]==0){
 			for(int i=0;i<32;i++){
 				register[36][i]=register[parameter2][i];
@@ -238,25 +259,25 @@ public class R extends DM{
 		}
 		return 0;
 	}
-	private static int and(int parameter1,int parameter2,int parameter3){
+	protected static int and(int parameter1,int parameter2,int parameter3){
 		for(int i = 0;i < 32;i++){
 			register[parameter1][i] = register[parameter2][i]&register[parameter3][i];
 		}
 		return 0;
 	}
-	private static int nor(int parameter1,int parameter2,int parameter3){
+	protected static int nor(int parameter1,int parameter2,int parameter3){
 		for(int i = 0;i < 32;i++){
 			register[parameter1][i] = 1^(register[parameter2][i]|register[parameter3][i]);
 		}
 		return 0;
 	}
-	private static int or(int parameter1,int parameter2,int parameter3){
+	protected static int or(int parameter1,int parameter2,int parameter3){
 		for(int i = 0;i < 32;i++){
 			register[parameter1][i] = register[parameter2][i]|register[parameter3][i];
 		}
 		return 0;
 	}
-	private static int xor(int parameter1,int parameter2,int parameter3){
+	protected static int xor(int parameter1,int parameter2,int parameter3){
 		for(int i = 0;i < 32;i++){
 			register[parameter1][i] = register[parameter2][i]^register[parameter3][i];
 		}
@@ -301,7 +322,7 @@ public class R extends DM{
 		}
 		return 0;
 	}
-	private static int slt(int parameter1,int parameter2,int parameter3){
+	protected static int slt(int parameter1,int parameter2,int parameter3){
 		int tempNumber = 0;
 		if(register[parameter2][31]>register[parameter3][31]){
 			tempNumber = 1;
@@ -343,8 +364,33 @@ public class R extends DM{
 		}
 		return 0;
 	}
-	private static int sltu(int parameter1,int parameter2,int parameter3){
+	protected static int sltu(int parameter1,int parameter2,int parameter3){
 		int tempNumber = 0;
+		for(int i = 31;i>=0;i--){
+			if(register[parameter2][i]<register[parameter3][i]){
+				tempNumber = 1;
+				break;
+			}
+			else if(register[parameter2][i]>register[parameter3][i]){
+				tempNumber = 0;
+				break;
+			}
+		}
+		if(tempNumber==1){
+			for(int i =1;i < 32;i++){
+				register[parameter1][i] = 0;
+			}
+			register[parameter1][0] = 1;
+		}
+		else{
+			for(int i =0;i < 32;i++){
+				register[parameter1][i] = 0;
+			}
+		}
+		return 0;
+	}
+	private static int sleu(int parameter1,int parameter2,int parameter3){
+		int tempNumber = 1;
 		for(int i = 30;i>=0;i--){
 			if(register[parameter2][i]<register[parameter3][i]){
 				tempNumber = 1;
@@ -353,6 +399,48 @@ public class R extends DM{
 			else if(register[parameter2][i]>register[parameter3][i]){
 				tempNumber = 0;
 				break;
+			}
+		}
+		if(tempNumber==1){
+			for(int i =1;i < 32;i++){
+				register[parameter1][i] = 0;
+			}
+			register[parameter1][0] = 1;
+		}
+		else{
+			for(int i =0;i < 32;i++){
+				register[parameter1][i] = 0;
+			}
+		}
+		return 0;
+	}
+	private static int sle(int parameter1,int parameter2,int parameter3){
+		int tempNumber = 1;
+		if(register[parameter2][31]>register[parameter3][31]){
+			tempNumber = 1;
+		}
+		else if((register[parameter1][31] == 1)&&(register[parameter1][31]==1)){
+			for(int i = 30;i>=0;i--){
+				if(register[parameter2][i]>register[parameter3][i]){
+					tempNumber = 1;
+					break;
+				}
+				else if(register[parameter2][i]<register[parameter3][i]){
+					tempNumber = 0;
+					break;
+				}
+			}
+		}
+		else if((register[parameter1][31] == 0)&&(register[parameter1][31]==0)){
+			for(int i = 30;i>=0;i--){
+				if(register[parameter2][i]<register[parameter3][i]){
+					tempNumber = 1;
+					break;
+				}
+				else if(register[parameter2][i]>register[parameter3][i]){
+					tempNumber = 0;
+					break;
+				}
 			}
 		}
 		if(tempNumber==1){
@@ -520,76 +608,176 @@ public class R extends DM{
 		return 0;
 	}
 	private static int mult(int parameter1,int parameter2){
+		for(int i = 0;i < MaxBit;i++){
+			register[33][i] = 0;
+			register[34][i] = 0;
+		}
+		if(register[parameter1][31]==0){
+			for(int i=0;i<32;i++){
+				register[35][i]=register[parameter1][i];
+			}
+		}
+		else{
+			register[35][31]=1;
+			for(int i=0;i<31;i++){
+				register[35][i]=1^register[parameter1][i];
+			}
+			addu(35,35,0,1);
+		}
+		if(register[parameter2][31]==0){
+			for(int i=0;i<32;i++){
+				register[36][i]=register[parameter2][i];
+			}
+		}
+		else{
+			register[36][31]=1;
+			for(int i=0;i<31;i++){
+				register[36][i]=1^register[parameter2][i];
+			}
+			addu(36,36,0,1);
+		}
+		int tempNumber = 0;
+		for(int i=0;i < 31;i++){
+			if(register[36][i]==1){
+				int j;
+				tempNumber = 0;
+				for(j = 0;j < 31;j++){
+					if(i+j<MaxBit){
+						register[34][i+j] += register[35][j]+tempNumber;
+						if(register[34][i+j]==2){
+							register[34][i+j]=0;
+							tempNumber=1;
+						}
+						else if(register[34][i+j]==3){
+							register[34][i+j]=1;
+							tempNumber=1;
+						}
+						else{
+							tempNumber=0;
+						}
+					}
+					else{
+						register[33][i+j-MaxBit] +=register[35][j]+tempNumber;
+						if(register[33][i+j-MaxBit]==2){
+							register[33][i+j-MaxBit]=0;
+							tempNumber=1;
+						}
+						else if(register[33][i+j-MaxBit]==3){
+							register[33][i+j-MaxBit]=1;
+							tempNumber=1;
+						}
+						else{
+							tempNumber=0;
+						}
+					}
+				}
+				register[33][i+j-MaxBit]=tempNumber;
+			}
+		}
+		register[33][31] = register[35][31]^register[36][31];
+		if(register[33][31]==1){
+			for(int i=0;i < 31;i++){
+				register[34][i] = 1^register[34][i];
+				register[33][i] = 1^register[33][i];
+			}
+			register[34][31] = 1^register[34][31];
+			if(register[34][31]==1){
+				addu(34,34,0,1);
+				if(register[34][31]==0){
+					tempNumber = 1;
+				}
+				else{
+					tempNumber = 0;
+				}
+			}
+			else{
+				addu(34,34,0,1);
+				tempNumber = 0;
+			}
+			addu(33,33,0,tempNumber);
+		}
 		return 0;
 	}
 	private static int multu(int parameter1,int parameter2){
+		for(int i = 0;i < MaxBit;i++){
+			register[33][i] = 0;
+			register[34][i] = 0;
+		}
+		for(int i=0;i<32;i++){
+			register[35][i]=register[parameter1][i];
+		}
+		for(int i=0;i<32;i++){
+			register[36][i]=register[parameter2][i];
+		}
+		int tempNumber = 0;
+		for(int i=0;i < 32;i++){
+			if(register[36][i]==1){
+				int j;
+				tempNumber=0;
+				for(j = 0;j < 32;j++){
+					if(i+j<MaxBit){
+						register[34][i+j] += register[35][j]+tempNumber;
+						if(register[34][i+j]==2){
+							register[34][i+j]=0;
+							tempNumber=1;
+						}
+						else if(register[34][i+j]==3){
+							register[34][i+j]=1;
+							tempNumber=1;
+						}
+						else{
+							tempNumber=0;
+						}
+					}
+					else{
+						register[33][i+j-MaxBit] +=register[35][j]+tempNumber;
+						if(register[33][i+j-MaxBit]==2){
+							register[33][i+j-MaxBit]=0;
+							tempNumber=1;
+						}
+						else if(register[33][i+j-MaxBit]==3){
+							register[33][i+j-MaxBit]=1;
+							tempNumber=1;
+						}
+						else{
+							tempNumber=0;
+						}
+					}
+				}
+				register[33][i+j-MaxBit]=tempNumber;
+			}
+		}
 		return 0;
 	}
-	private static int sleu(int parameter1,int parameter2,int parameter3){
-		int tempNumber = 1;
-		for(int i = 30;i>=0;i--){
-			if(register[parameter2][i]<register[parameter3][i]){
-				tempNumber = 1;
-				break;
-			}
-			else if(register[parameter2][i]>register[parameter3][i]){
-				tempNumber = 0;
-				break;
-			}
-		}
-		if(tempNumber==1){
-			for(int i =1;i < 32;i++){
-				register[parameter1][i] = 0;
-			}
-			register[parameter1][0] = 1;
-		}
-		else{
-			for(int i =0;i < 32;i++){
-				register[parameter1][i] = 0;
-			}
+	private static int mfc0(int parameter1,int parameter2){
+		for(int i = 0;i < MaxBit;i++){
+			register[parameter1][i] = CoregisterCP0[parameter2][i];
 		}
 		return 0;
 	}
-	private static int sle(int parameter1,int parameter2,int parameter3){
-		int tempNumber = 1;
-		if(register[parameter2][31]>register[parameter3][31]){
-			tempNumber = 1;
+	private static int mfhi(int parameter1){
+		for(int i = 0;i < MaxBit;i++){
+			register[parameter1][i] = register[33][i];
 		}
-		else if((register[parameter1][31] == 1)&&(register[parameter1][31]==1)){
-			for(int i = 30;i>=0;i--){
-				if(register[parameter2][i]>register[parameter3][i]){
-					tempNumber = 1;
-					break;
-				}
-				else if(register[parameter2][i]<register[parameter3][i]){
-					tempNumber = 0;
-					break;
-				}
-			}
+		return 0;
+	}
+	private static int mflo(int parameter1){
+		for(int i = 0;i < MaxBit;i++){
+			register[parameter1][i] = register[34][i];
 		}
-		else if((register[parameter1][31] == 0)&&(register[parameter1][31]==0)){
-			for(int i = 30;i>=0;i--){
-				if(register[parameter2][i]<register[parameter3][i]){
-					tempNumber = 1;
-					break;
-				}
-				else if(register[parameter2][i]>register[parameter3][i]){
-					tempNumber = 0;
-					break;
-				}
-			}
+		return 0;
+	}
+	private static int mthi(int parameter1){
+		for(int i = 0;i < MaxBit;i++){
+			register[33][i] = register[parameter1][i];
 		}
-		if(tempNumber==1){
-			for(int i =1;i < 32;i++){
-				register[parameter1][i] = 0;
-			}
-			register[parameter1][0] = 1;
-		}
-		else{
-			for(int i =0;i < 32;i++){
-				register[parameter1][i] = 0;
-			}
+		return 0;
+	}
+	private static int mtlo(int parameter1){
+		for(int i = 0;i < MaxBit;i++){
+			register[34][i] = register[parameter1][i];
 		}
 		return 0;
 	}
 }
+

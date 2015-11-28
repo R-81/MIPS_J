@@ -27,5 +27,10 @@ public class DM{
 				CoregisterCP0[i][j] = 0;
 			}
 		}
+		//text data
+		register[6][31]=1;
+		register[6][1]=1;
+		register[5][1]=1;
+		register[5][31]=1;
 	}
 }
